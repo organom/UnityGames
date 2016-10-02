@@ -3,33 +3,37 @@ using System.Collections;
 
 public class characterControllScript : MonoBehaviour
 {
-    public float maxSpeed = 150f;
+    public float maxWalkSpeed = 120f;
+    public float maxRunSpeed = 230f;
+    
+    float maxSpeed;
     bool facingRight = true;
 
     Animator anim;
-    Rigidbody2D rigidbody2D;
+    Rigidbody2D rbody2d;
 
     bool grounded = false;
     public Transform groundCheck;
     float groundRadius = 0.3f;
     public LayerMask whatIsGround;
-    public float jumpForce = 700f;
+    public float jumpForce = 7000f;
 
-	void Start ()
+    void Start ()
     {
         anim = GetComponent<Animator>();
-        rigidbody2D = GetComponent<Rigidbody2D>();
+        rbody2d = GetComponent<Rigidbody2D>();
+        maxSpeed = maxWalkSpeed;
     }
 
     void FixedUpdate()
     {
         grounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, whatIsGround);
         anim.SetBool("Ground", grounded);
-        anim.SetFloat("vSpeed", rigidbody2D.velocity.y);
+        anim.SetFloat("vSpeed", rbody2d.velocity.y);
 
         float move = Input.GetAxis("Horizontal");
-        anim.SetFloat("Speed", Mathf.Abs(move));
-        rigidbody2D.velocity = new Vector2(move * maxSpeed, rigidbody2D.velocity.y);
+        anim.SetFloat("Speed", Mathf.Abs(move * maxSpeed));
+        rbody2d.velocity = new Vector2(move * maxSpeed, rbody2d.velocity.y);
 
         if (move > 0 && !facingRight)
             Flip();
@@ -47,10 +51,13 @@ public class characterControllScript : MonoBehaviour
 
     void Update()
     {
+        if(grounded)
+            maxSpeed = (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) ? maxRunSpeed : maxWalkSpeed;
+
         if(grounded && Input.GetKeyDown(KeyCode.Space))
         {
             anim.SetBool("Ground", false);
-            rigidbody2D.AddForce(new Vector2(0, jumpForce*3));
+            rbody2d.AddForce(new Vector2(0, jumpForce));
         }
                 
 	}
